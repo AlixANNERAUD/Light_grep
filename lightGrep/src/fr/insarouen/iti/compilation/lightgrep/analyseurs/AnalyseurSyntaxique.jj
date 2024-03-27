@@ -1,0 +1,111 @@
+options {
+  LOOKAHEAD = 1;
+  CHOICE_AMBIGUITY_CHECK = 2;
+  OTHER_AMBIGUITY_CHECK = 1;
+  STATIC = false;
+  DEBUG_PARSER = false;
+  DEBUG_LOOKAHEAD = false;
+  DEBUG_TOKEN_MANAGER = false;
+  ERROR_REPORTING = true;
+  JAVA_UNICODE_ESCAPE = false;
+  UNICODE_INPUT = false;
+  IGNORE_CASE = true;
+  USER_TOKEN_MANAGER = false;
+  USER_CHAR_STREAM = false;
+  BUILD_PARSER = true;
+  BUILD_TOKEN_MANAGER = true;
+  SANITY_CHECK = true;
+  FORCE_LA_CHECK = false;
+}
+
+PARSER_BEGIN(AnalyseurSyntaxique)
+package fr.insarouen.iti.compilation.lightgrep.analyseurs;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.HashSet;
+
+import fr.insarouen.iti.compilation.lightgrep.automate.Lettre;
+import fr.insarouen.iti.compilation.lightgrep.automate.LettreException;
+import fr.insarouen.iti.compilation.lightgrep.arbreSyntaxiqueAbstrait.ExpressionRationnelle;
+import fr.insarouen.iti.compilation.lightgrep.arbreSyntaxiqueAbstrait.ExpressionRationnelleElementaire;
+import fr.insarouen.iti.compilation.lightgrep.arbreSyntaxiqueAbstrait.ZeroAN;
+import fr.insarouen.iti.compilation.lightgrep.arbreSyntaxiqueAbstrait.ZeroOuUn;
+import fr.insarouen.iti.compilation.lightgrep.arbreSyntaxiqueAbstrait.UnAN;
+import fr.insarouen.iti.compilation.lightgrep.arbreSyntaxiqueAbstrait.Concatenation;
+import fr.insarouen.iti.compilation.lightgrep.arbreSyntaxiqueAbstrait.Union;
+
+
+public class AnalyseurSyntaxique {
+}
+
+PARSER_END(AnalyseurSyntaxique)
+
+
+TOKEN : {
+    <CARACTERE_ECHAPE:"\\|" | "\\$" | "\\(" | "\\)" | "\\[" | "\\]" | "\\*" | "\\?" | "\\." | "\\-" | "\\$">
+    | <OU:"|">
+    | <PARAG:"(">
+    | <PARAD:")">
+    | <CROCHETG:"[">
+    | <CROCHETD:"]">
+    | <ZERO_N:"*">
+    | <ZERO_UN:"?">
+    | <UN_N:"+">
+    | <JOKER:".">
+    | <TIRET:"-">
+    | <CIRCONFLEXE:"^">
+    | <FIN_DE_LIGNE:"$">
+    | <CARACTERE:["a"-"z","A"-"Z","0"-"9","!","\"","#","%","&",",","/",":",";",
+            "<","=",">","?","@","^","_","`","{","|","}","~"]>
+}
+
+ExpressionRationnelle expressionRationnelle() throws LettreException :
+// @u:start expressionRationnelle
+
+{ExpressionRationnelle res=null;}{{return res;}}
+
+// @u:end expressionRationnelle
+
+ExpressionRationnelle expressionsRationnellesConcatenees()  throws LettreException :
+// @u:start expressionRationnellesConcatenees
+
+{ExpressionRationnelle res=null;}{{return res;}}
+
+// @u:end expressionRationnellesConcatenees
+
+ExpressionRationnelle expressionRationnelleBasique() throws LettreException :
+// @u:start expressionRationnelleBasique
+
+{ExpressionRationnelle res=null;}{{return res;}}
+
+// @u:end expressionRationnelleBasique
+
+ExpressionRationnelle expressionRationnelleElementaire() throws LettreException :
+// @u:start expressionRationnelleElementaire
+
+{ExpressionRationnelle res=null;}{{return res;}}
+
+// @u:end expressionRationnelleElementaire
+
+Set<Lettre> ensembleDeLettres() throws LettreException :
+// @u:start ensembleDeLettres
+
+{Set<Lettre> res=null;}{{return res;}}
+
+// @u:end ensembleDeLettres
+
+Set<Lettre> elementsEnsembleDeLettres() throws LettreException :
+// @u:start elementsEnsembleDeLettres
+
+{Set<Lettre> res=null;}{{return res;}}
+
+// @u:end elementsEnsembleDeLettres
+
+Lettre lettre() :
+// @u:start lettre
+
+{Lettre res=null;}{{return res;}}
+
+// @u:end lettre
