@@ -64,16 +64,14 @@ TOKEN : {
 ExpressionRationnelle expressionRationnelle() throws LettreException :
 // @u:start expressionRationnelle
 {
-  HashSet<ExpressionRationnelle> ensemble=null;
-  ExpressionRationnelle expression1=null, expression2=null;
-}{
-  expression1=expressionsRationnellesConcatenees() ( <OU> expression2=expressionRationnelle() )? {
-    ensemble = new HashSet<ExpressionRationnelle>();
-    ensemble.add(expression1);
-    if (expression2 != null) {
-      ensemble.add(expression2);
-    }
-    return new Union(ensemble);
+  HashSet<ExpressionRationnelle> ensemble = new HashSet<ExpressionRationnelle>();
+  ExpressionRationnelle expression1 = null, expression2 = null;
+}
+{
+  expression1=expressionsRationnellesConcatenees() ( <OU> expression2=expressionsRationnellesConcatenees() { ensemble.add(expression2); } )* {
+      ensemble.add(expression1);
+      System.out.println("Union : " + ensemble.toString());
+      return new Union(ensemble);
   }
 }
 
@@ -82,20 +80,13 @@ ExpressionRationnelle expressionRationnelle() throws LettreException :
 ExpressionRationnelle expressionsRationnellesConcatenees()  throws LettreException :
 // @u:start expressionRationnellesConcatenees
 {
-  ArrayList<ExpressionRationnelle> liste=null;
-  ExpressionRationnelle expression1=null, expression2=null;
+  ArrayList<ExpressionRationnelle> liste = new ArrayList<ExpressionRationnelle>();
+  ExpressionRationnelle expression1=null, expression2 = null;
 }
 {
-  expression1=expressionRationnelleBasique() ( expression2=expressionsRationnellesConcatenees() )? {
-    liste=new ArrayList<ExpressionRationnelle>();
-    if (expression2 != null) {
-      if (expression2 instanceof Concatenation) {
-        liste.addAll(((Concatenation)expression2).getExpressionsRationelles());
-      } else {
-        throw new LettreException("L'expression rationnelle n'est pas une concaténation : " + expression2.toString());
-      }
-    }
-    liste.add(expression1);
+  expression1=expressionRationnelleBasique() ( expression2=expressionRationnelleBasique() { liste.add(expression2); } )* {
+    liste.add(0, expression1);
+    System.out.println("Concaténation : " + liste.toString());
     return new Concatenation(liste);
   }
 }
@@ -107,21 +98,27 @@ ExpressionRationnelle expressionRationnelleBasique() throws LettreException :
 {
   Token t = null;
   ExpressionRationnelle expression = null;
-}{
+}
+{
   expression=expressionRationnelleElementaire() (t = <ZERO_N>|t = <ZERO_UN>|t = <UN_N>)? 
   {
     if (t != null) {
       switch (t.kind) {
         case ZERO_N:
+          System.out.println("Zero ou N : " + expression.toString());
           return new ZeroAN(expression);
         case ZERO_UN:
+          System.out.println("Zero ou Un : " + expression.toString());
           return new ZeroOuUn(expression);
         case UN_N:
+          System.out.println("Un ou N : " + expression.toString());
           return new UnAN(expression);
         default:
           throw new LettreException("Expression rationnelle basique incorrecte"); // Impossible car l'analyseur syntatique ne devrait pas accepter ce cas.
       }
-    } else {
+    }
+    else {
+      System.out.println("Expression rationnelle basique : " + expression.toString());
       return expression;
     }
 
@@ -133,30 +130,39 @@ ExpressionRationnelle expressionRationnelleBasique() throws LettreException :
 ExpressionRationnelle expressionRationnelleElementaire() throws LettreException :
 // @u:start expressionRationnelleElementaire
 {
+  Token t = null;
   Lettre l = null;
   Set<Lettre> ensemble = null;
   ExpressionRationnelle expression = null;
-}{
-  <PARAG> expression=expressionRationnelle() <PARAD> {return expression;}
-  | l=lettre() {return new ExpressionRationnelleElementaire(l);}
-  | <JOKER> {return new ExpressionRationnelleElementaire(new Lettre('.'));}
-  | <CROCHETG> (<CIRCONFLEXE>)? ensemble=ensembleDeLettres() <CROCHETD> { return new ExpressionRationnelleElementaire(ensemble);}
+}
+{
+  <PARAG> expression=expressionRationnelle() <PARAD> { return expression; }
+  | l=lettre() {
+    System.out.println("ERE : " + l.toString());
+    return new ExpressionRationnelleElementaire(l);
+  }
+  | <JOKER> { return new ExpressionRationnelleElementaire(new Lettre('.')); }
+  | <CROCHETG> (t = <CIRCONFLEXE>)? ensemble=ensembleDeLettres() <CROCHETD> { 
+    if (t != null) {
+      ensemble.add(new Lettre('^'));
+    }
+    return new ExpressionRationnelleElementaire(ensemble);
+  }
 }
 
 // @u:end expressionRationnelleElementaire
 
 Set<Lettre> ensembleDeLettres() throws LettreException :
 // @u:start ensembleDeLettres
-
 {
-  Set<Lettre> elements = null, ensemble = null;
-}{
-  elements = elementsEnsembleDeLettres() ( ensemble = ensembleDeLettres() )?
-  {
-    if (ensemble != null) {
-      elements.addAll(ensemble);
-    }
-    return elements;
+  Set<Lettre> resultat = new HashSet<Lettre>();
+  Set<Lettre> elements1 = null, elements2 = null;
+}
+{
+  elements1 = elementsEnsembleDeLettres() ( elements2=elementsEnsembleDeLettres() { resultat.addAll(elements2); } )* {
+    resultat.addAll(elements1);
+    System.out.println("Ensemble de lettres : " + resultat.toString());
+    return resultat;
   }
 }
 
@@ -164,18 +170,19 @@ Set<Lettre> ensembleDeLettres() throws LettreException :
 
 Set<Lettre> elementsEnsembleDeLettres() throws LettreException :
 // @u:start elementsEnsembleDeLettres
-
 {
   Lettre l1 = null, l2 = null;
   Set<Lettre> ensemble = null;
-}{
-  l1=lettre () ( <TIRET> l2 = lettre() )? 
-  {
+}
+{
+  l1 = lettre() ( <TIRET> l2 = lettre() )? 
+  {   
     ensemble = new HashSet<Lettre>();
     ensemble.add(l1);
     if (l2 != null) {
       ensemble.add(l2);
     } 
+    System.out.println("Ensemble de lettres : " + ensemble.toString());
     return ensemble;
   }
 }
@@ -186,9 +193,16 @@ Lettre lettre() :
 // @u:start lettre
 {
   Token t;
-}{
-  t=<CARACTERE> {return new Lettre(t.image.charAt(0));}
-  | t=<CARACTERE_ECHAPE> {return new Lettre(t.image.charAt(0));}
+}
+{
+  t = <CARACTERE> { 
+    System.out.println("Lettre : " + t.image.charAt(0));
+    return new Lettre(t.image.charAt(0));
+  }
+  | t = <CARACTERE_ECHAPE> { 
+    System.out.println("Lettre échappée : " + t.image.charAt(1));
+    return new Lettre(t.image.charAt(1));
+  }
 }
 
 // @u:end lettre
