@@ -63,49 +63,132 @@ TOKEN : {
 
 ExpressionRationnelle expressionRationnelle() throws LettreException :
 // @u:start expressionRationnelle
-
-{ExpressionRationnelle res=null;}{{return res;}}
+{
+  HashSet<ExpressionRationnelle> ensemble=null;
+  ExpressionRationnelle expression1=null, expression2=null;
+}{
+  expression1=expressionsRationnellesConcatenees() ( <OU> expression2=expressionRationnelle() )? {
+    ensemble = new HashSet<ExpressionRationnelle>();
+    ensemble.add(expression1);
+    if (expression2 != null) {
+      ensemble.add(expression2);
+    }
+    return new Union(ensemble);
+  }
+}
 
 // @u:end expressionRationnelle
 
 ExpressionRationnelle expressionsRationnellesConcatenees()  throws LettreException :
 // @u:start expressionRationnellesConcatenees
-
-{ExpressionRationnelle res=null;}{{return res;}}
+{
+  ArrayList<ExpressionRationnelle> liste=null;
+  ExpressionRationnelle expression1=null, expression2=null;
+}
+{
+  expression1=expressionRationnelleBasique() ( expression2=expressionsRationnellesConcatenees() )? {
+    liste=new ArrayList<ExpressionRationnelle>();
+    if (expression2 != null) {
+      if (expression2 instanceof Concatenation) {
+        liste.addAll(((Concatenation)expression2).getExpressionsRationelles());
+      } else {
+        throw new LettreException("L'expression rationnelle n'est pas une concaténation : " + expression2.toString());
+      }
+    }
+    liste.add(expression1);
+    return new Concatenation(liste);
+  }
+}
 
 // @u:end expressionRationnellesConcatenees
 
 ExpressionRationnelle expressionRationnelleBasique() throws LettreException :
 // @u:start expressionRationnelleBasique
+{
+  Token t = null;
+  ExpressionRationnelle expression = null;
+}{
+  expression=expressionRationnelleElementaire() (t = <ZERO_N>|t = <ZERO_UN>|t = <UN_N>)? 
+  {
+    if (t != null) {
+      switch (t.kind) {
+        case ZERO_N:
+          return new ZeroAN(expression);
+        case ZERO_UN:
+          return new ZeroOuUn(expression);
+        case UN_N:
+          return new UnAN(expression);
+        default:
+          throw new LettreException("Expression rationnelle basique incorrecte"); // Impossible car l'analyseur syntatique ne devrait pas accepter ce cas.
+      }
+    } else {
+      return expression;
+    }
 
-{ExpressionRationnelle res=null;}{{return res;}}
+  }
+}
 
 // @u:end expressionRationnelleBasique
 
 ExpressionRationnelle expressionRationnelleElementaire() throws LettreException :
 // @u:start expressionRationnelleElementaire
-
-{ExpressionRationnelle res=null;}{{return res;}}
+{
+  Lettre l = null;
+  Set<Lettre> ensemble = null;
+  ExpressionRationnelle expression = null;
+}{
+  <PARAG> expression=expressionRationnelle() <PARAD> {return expression;}
+  | l=lettre() {return new ExpressionRationnelleElementaire(l);}
+  | <JOKER> {return new ExpressionRationnelleElementaire(new Lettre('.'));}
+  | <CROCHETG> (<CIRCONFLEXE>)? ensemble=ensembleDeLettres() <CROCHETD> { return new ExpressionRationnelleElementaire(ensemble);}
+}
 
 // @u:end expressionRationnelleElementaire
 
 Set<Lettre> ensembleDeLettres() throws LettreException :
 // @u:start ensembleDeLettres
 
-{Set<Lettre> res=null;}{{return res;}}
+{
+  Set<Lettre> elements = null, ensemble = null;
+}{
+  elements = elementsEnsembleDeLettres() ( ensemble = ensembleDeLettres() )?
+  {
+    if (ensemble != null) {
+      elements.addAll(ensemble);
+    }
+    return elements;
+  }
+}
 
 // @u:end ensembleDeLettres
 
 Set<Lettre> elementsEnsembleDeLettres() throws LettreException :
 // @u:start elementsEnsembleDeLettres
 
-{Set<Lettre> res=null;}{{return res;}}
+{
+  Lettre l1 = null, l2 = null;
+  Set<Lettre> ensemble = null;
+}{
+  l1=lettre () ( <TIRET> l2 = lettre() )? 
+  {
+    ensemble = new HashSet<Lettre>();
+    ensemble.add(l1);
+    if (l2 != null) {
+      ensemble.add(l2);
+    } 
+    return ensemble;
+  }
+}
 
 // @u:end elementsEnsembleDeLettres
 
 Lettre lettre() :
 // @u:start lettre
-
-{Lettre res=null;}{{return res;}}
+{
+  Token t;
+}{
+  t=<CARACTERE> {return new Lettre(t.image.charAt(0));}
+  | t=<CARACTERE_ECHAPE> {return new Lettre(t.image.charAt(0));}
+}
 
 // @u:end lettre
