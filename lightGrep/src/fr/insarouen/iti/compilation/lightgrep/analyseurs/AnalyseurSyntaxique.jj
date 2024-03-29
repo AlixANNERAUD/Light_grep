@@ -141,10 +141,10 @@ ExpressionRationnelle expressionRationnelleElementaire() throws LettreException 
     System.out.println("ERE : " + l.toString());
     return new ExpressionRationnelleElementaire(l);
   }
-  | <JOKER> { return new ExpressionRationnelleElementaire(new Lettre('.')); }
+  | <JOKER> { return new ExpressionRationnelleElementaire(Lettre.toutesLesLettresPossibles()); }
   | <CROCHETG> (t = <CIRCONFLEXE>)? ensemble=ensembleDeLettres() <CROCHETD> { 
     if (t != null) {
-      ensemble.add(new Lettre('^'));
+      ensemble = Lettre.lettresComplementaires(ensemble);
     }
     return new ExpressionRationnelleElementaire(ensemble);
   }
@@ -177,11 +177,12 @@ Set<Lettre> elementsEnsembleDeLettres() throws LettreException :
 {
   l1 = lettre() ( <TIRET> l2 = lettre() )? 
   {   
-    ensemble = new HashSet<Lettre>();
-    ensemble.add(l1);
     if (l2 != null) {
-      ensemble.add(l2);
-    } 
+      ensemble = Lettre.toutesLesLettresComprisesEntre(l1, l2);
+    } else {
+      ensemble = new HashSet<Lettre>();
+      ensemble.add(l1);
+    }
     System.out.println("Ensemble de lettres : " + ensemble.toString());
     return ensemble;
   }
