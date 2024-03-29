@@ -70,7 +70,6 @@ ExpressionRationnelle expressionRationnelle() throws LettreException :
 {
   expression1=expressionsRationnellesConcatenees() ( <OU> expression2=expressionsRationnellesConcatenees() { ensemble.add(expression2); } )* {
       ensemble.add(expression1);
-      System.out.println("Union : " + ensemble.toString());
       return new Union(ensemble);
   }
 }
@@ -86,7 +85,6 @@ ExpressionRationnelle expressionsRationnellesConcatenees()  throws LettreExcepti
 {
   expression1=expressionRationnelleBasique() ( expression2=expressionRationnelleBasique() { liste.add(expression2); } )* {
     liste.add(0, expression1);
-    System.out.println("Concaténation : " + liste.toString());
     return new Concatenation(liste);
   }
 }
@@ -105,20 +103,16 @@ ExpressionRationnelle expressionRationnelleBasique() throws LettreException :
     if (t != null) {
       switch (t.kind) {
         case ZERO_N:
-          System.out.println("Zero ou N : " + expression.toString());
           return new ZeroAN(expression);
         case ZERO_UN:
-          System.out.println("Zero ou Un : " + expression.toString());
           return new ZeroOuUn(expression);
         case UN_N:
-          System.out.println("Un ou N : " + expression.toString());
           return new UnAN(expression);
         default:
           throw new LettreException("Expression rationnelle basique incorrecte"); // Impossible car l'analyseur syntatique ne devrait pas accepter ce cas.
       }
     }
     else {
-      System.out.println("Expression rationnelle basique : " + expression.toString());
       return expression;
     }
 
@@ -138,7 +132,6 @@ ExpressionRationnelle expressionRationnelleElementaire() throws LettreException 
 {
   <PARAG> expression=expressionRationnelle() <PARAD> { return expression; }
   | l=lettre() {
-    System.out.println("ERE : " + l.toString());
     return new ExpressionRationnelleElementaire(l);
   }
   | <JOKER> { return new ExpressionRationnelleElementaire(Lettre.toutesLesLettresPossibles()); }
@@ -161,7 +154,6 @@ Set<Lettre> ensembleDeLettres() throws LettreException :
 {
   elements1 = elementsEnsembleDeLettres() ( elements2=elementsEnsembleDeLettres() { resultat.addAll(elements2); } )* {
     resultat.addAll(elements1);
-    System.out.println("Ensemble de lettres : " + resultat.toString());
     return resultat;
   }
 }
@@ -183,7 +175,6 @@ Set<Lettre> elementsEnsembleDeLettres() throws LettreException :
       ensemble = new HashSet<Lettre>();
       ensemble.add(l1);
     }
-    System.out.println("Ensemble de lettres : " + ensemble.toString());
     return ensemble;
   }
 }
@@ -197,11 +188,9 @@ Lettre lettre() :
 }
 {
   t = <CARACTERE> { 
-    System.out.println("Lettre : " + t.image.charAt(0));
     return new Lettre(t.image.charAt(0));
   }
   | t = <CARACTERE_ECHAPE> { 
-    System.out.println("Lettre échappée : " + t.image.charAt(1));
     return new Lettre(t.image.charAt(1));
   }
 }
